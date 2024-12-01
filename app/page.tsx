@@ -1,101 +1,135 @@
-import Image from "next/image";
+"use client";
+
+import axios from "axios";
+import DropImageInput from "./components/home/DropImageInput";
+import PlantTypeSelection from "./components/home/PlantTypeSelection";
+import LoadingBar from "./components/LoadingBar";
+import { ChangeEvent, FormEvent, useState } from "react";
+import IcLoading from "./components/icons/IcLoading";
+import { ResponseData, SuccessResponse } from "./types";
+import PredictionResult from "./components/home/PredictionResult";
+
+interface PlantFormData {
+  plantType: string;
+  image: File | null;
+}
+
+type DataState = "initial" | "loading" | "success" | "error";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [dataState, setDataState] = useState<DataState>("initial");
+  const [data, setData] = useState<SuccessResponse | undefined>(undefined);
+  const [error, setError] = useState<string | undefined>(undefined);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const isFormValid = () => formData.plantType && formData.image;
+
+  const [formData, setFormData] = useState<PlantFormData>({
+    plantType: "",
+    image: null,
+  });
+
+  const handlePlantTypeChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      plantType: event.target.value,
+    });
+  };
+
+  const handleImageChange = (file: File | null) => {
+    setFormData({
+      ...formData,
+      image: file,
+    });
+  };
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setDataState("loading");
+
+    if (!isFormValid()) {
+      return;
+    }
+
+    const formDataObj = new FormData();
+    formDataObj.append("plant_type", formData.plantType);
+    formDataObj.append("image", formData.image!);
+    formDataObj.append("show_image", "true");
+
+    try {
+      const response = await axios.post(
+        "https://application-2c.1ojgx14h1gp0.jp-tok.codeengine.appdomain.cloud/api/v1/predict",
+        formDataObj,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const responseData: ResponseData | undefined = response?.data;
+
+      if (!responseData) return;
+
+      if (responseData.detail.status === "success") {
+        if (responseData.detail.predictions.length > 0) {
+          setDataState("success");
+          setData(responseData.detail);
+        } else {
+          setDataState("error");
+          setError(
+            "The image cannot be detected, please change the image or plant type"
+          );
+        }
+      } else {
+        setError(responseData.detail.error_message);
+        setDataState("error");
+      }
+    } catch (e) {
+      setError(e?.toString());
+      setDataState("error");
+    }
+  };
+
+  return (
+    <div className="py-10">
+      <div className="flex flex-col py-6 px-4 mx-2 sm:px-6 lg:px-8 bg-white rounded-lg border border-neutral-150 dark:bg-neutral-900 dark:border-gray-800">
+        <h2 className="mb-4 font-semibold text-xl">Start scan your plants</h2>
+
+        <form onSubmit={handleSubmit}>
+          <DropImageInput id="image" onChange={handleImageChange} />
+          <PlantTypeSelection
+            id="plant_type"
+            onChange={handlePlantTypeChange}
+          />
+          <div className="flex w-full justify-end mt-4 border-t border-neutral-150 pt-6 dark:border-gray-800">
+            <button
+              type="submit"
+              disabled={dataState === "loading" || !isFormValid()}
+              className={
+                isFormValid()
+                  ? "text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-8 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800"
+                  : "text-white bg-green-300 dark:bg-green-500/20 cursor-not-allowed font-medium rounded-lg text-sm px-8 py-2.5 me-2 mb-2 text-center"
+              }
+            >
+              {dataState === "loading" && <IcLoading />}
+              Start
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {dataState !== "initial" && (
+        <div className="flex flex-col py-6 px-4 mx-2  my-8 sm:px-6 lg:px-8 bg-white rounded-lg border border-neutral-150 dark:bg-neutral-900 dark:border-gray-800">
+          {dataState === "loading" && <LoadingBar />}
+          {dataState === "error" && <p>{error}</p>}
+          {dataState === "success" && (
+            <PredictionResult
+              image={data?.image}
+              predictions={data?.predictions ?? []}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
     </div>
   );
 }

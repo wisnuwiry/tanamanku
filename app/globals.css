@@ -3,19 +3,56 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
+  --background: #f7f7f7;
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html.dark {
+  --background: #0d0d0d;
+  --foreground: #ededed;
 }
+
+/* * {
+  user-select: none;
+  user-drag: none;
+  app-region: no-drag;
+} */
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+.markdown-body p, .markdown-body li {
+  margin: 10px 0px;
+}
+
+.markdown-body h2 {
+  font-weight: bold;
+  font-size: 20px;
+  margin: 16px 0px;
+}
+
+.markdown-body h3 {
+  font-weight: bold;
+  font-size: 16px;
+  margin: 14px 0px;
+}
+
+.markdown-body ul {
+  list-style: circle;
+  list-style-position: outside;
+  padding-left: 24px;
 }
