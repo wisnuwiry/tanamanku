@@ -57,7 +57,7 @@ export default function Home() {
 
     try {
       const response = await axios.post(
-        "https://application-2c.1ojgx14h1gp0.jp-tok.codeengine.appdomain.cloud/api/v1/predict",
+        process.env.NEXT_PUBLIC_API_URL + "/api/v1/predict",
         formDataObj,
         {
           headers: {
