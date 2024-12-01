@@ -17,6 +17,7 @@ const interSans = Inter({
 const merriewatherSerif = Merriweather({
   weight: ["300", "400", "700", "900"],
   variable: "--font-merriweather",
+  subsets: ['latin']
 });
 
 export default function RootLayout({
