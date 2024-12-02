@@ -19,7 +19,7 @@ export default function Accordion({
       <h2 onClick={() => setOpen(!open)}>
         <button
           type="button"
-          className={`flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 ${open? 'rounded-t-xl': 'rounded-xl'} focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 gap-3`}
+          className={`flex items-center justify-between w-full p-5 font-medium rtl:text-right text-gray-500 border border-gray-200 ${open? 'rounded-t-xl': 'rounded-xl'} focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-800 dark:border-gray-700 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-800 gap-3`}
         >
           <span>{title}</span>
           <svg
@@ -39,7 +39,7 @@ export default function Accordion({
         </button>
       </h2>
       <div className={open ? "" : "hidden"}>
-        <div className="p-5 border border-gray-200 dark:border-gray-700 dark:bg-gray-900">
+        <div className="p-5 border border-gray-200 dark:border-gray-700 dark:bg-neutral-800">
           <p className="mb-2 text-gray-500 dark:text-gray-400">
             <ReactMarkdown className="markdown-body">{body}</ReactMarkdown>
           </p>

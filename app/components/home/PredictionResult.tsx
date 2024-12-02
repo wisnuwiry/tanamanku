@@ -20,11 +20,11 @@ export default function PredictionResult({
             />
           )}
         </div>
-        <div className="flex-1">
+        <div className="flex-1 flex flex-col gap">
           {predictions.map((e, i) => (
             <Accordion
               key={i}
-              title={e.class_label}
+              title={e.class_label ?? e.class_name}
               body={e.solution}
               autoOpen={predictions.length === 1}
             />
